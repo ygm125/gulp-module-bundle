@@ -5,9 +5,9 @@ var browserify = require('browserify');
 var shim = require('browserify-shim');
 var path = require('path');
 var util = require('util');
-var Readable = require('stream').Readable || require('readable-stream');
+var Readable = require('stream').Readable;
 
-const PLUGIN_NAME = 'gulp-browserify';
+const PLUGIN_NAME = 'gulp-module-bundle';
 
 function arrayStream(items) {
   var index = 0;
@@ -60,6 +60,10 @@ module.exports = function(opts, data){
 
     if (file.isStream()) {
       self.emit('error', new PluginError(PLUGIN_NAME, 'Streams not supported'));
+      return cb();
+    }
+
+    if(file.isDirectory()){
       return cb();
     }
 
