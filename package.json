@@ -1,0 +1,30 @@
+{
+  "name": "gulp-module-bundle",
+  "version": "0.0.1",
+  "description": "Bundle modules with Browserify",
+  "license": "MIT",
+  "repository": "https://github.com/ygm125/gulp-module-bundle",
+  "author": "yuguangming125@126.com",
+  "dependencies": {
+    "browserify": "3.x",
+    "gulp-util": "~2.2.5",
+    "browserify-shim": "~2.0.10",
+    "readable-stream": "~1.1.10",
+    "through2": "~0.4.0"
+  },
+  "main": "index.js",
+  "engines": {
+    "node": ">= 0.9"
+  },
+  "scripts": {
+
+  },
+  "devDependencies": {
+
+  },
+  "keywords": [
+    "gulpplugin",
+    "gulpfriendly",
+    "browserify"
+  ]
+}
