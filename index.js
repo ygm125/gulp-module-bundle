@@ -93,8 +93,7 @@ module.exports = function(opts, data){
       opts.builtins = builtins;
     }
 
-    var bundler = browserify(data, opts);
-    bundler = bundler.transform(babelify);
+    var bundler = browserify(data, opts).transform(babelify);
 
     if(opts.shim) {
       for(var lib in opts.shim) {
@@ -124,7 +123,7 @@ module.exports = function(opts, data){
 
     self.emit('prebundle', bundler);
 
-    var bStream = bundler.bundle(opts, function(err, src){
+    var bStream = bundler.bundle(function(err, src){
       if(err) {
         self.emit('error', wrapWithPluginError(err));
       } else {
