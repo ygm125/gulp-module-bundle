@@ -6,6 +6,7 @@ var shim = require('browserify-shim');
 var path = require('path');
 var util = require('util');
 var Readable = require('stream').Readable;
+var babelify = require("babelify");
 
 const PLUGIN_NAME = 'gulp-module-bundle';
 
@@ -93,6 +94,7 @@ module.exports = function(opts, data){
     }
 
     var bundler = browserify(data, opts);
+    bundler = bundler.transform(babelify);
 
     if(opts.shim) {
       for(var lib in opts.shim) {
