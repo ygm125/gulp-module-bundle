@@ -2,11 +2,11 @@ var through = require('through2');
 var gutil = require('gulp-util');
 var PluginError = gutil.PluginError;
 var browserify = require('browserify');
-var shim = require('browserify-shim');
 var path = require('path');
 var util = require('util');
 var Readable = require('stream').Readable;
 var babelify = require("babelify");
+// var shim = require('browserify-shim');
 
 const PLUGIN_NAME = 'gulp-module-bundle';
 
@@ -45,16 +45,9 @@ function wrapWithPluginError(originalError){
   return new PluginError(PLUGIN_NAME, message, opts);
 }
 
-module.exports = function(opts, data){
-  opts = opts || {};
-  data = data || {};
-
-  ['noParse', 'extensions', 'resolve'].forEach(function(opt){
-    if(opts[opt]) {
-      data[opt] = opts[opt];
-      delete opts[opt];
-    }
-  });
+module.exports = function(bsConf, bbConf){
+  bsConf = bsConf || {};
+  bbConf = bbConf || {};
 
   function transform(file, enc, cb){
     var self = this;
@@ -68,21 +61,19 @@ module.exports = function(opts, data){
       return cb();
     }
 
-    // browserify accepts file path or stream.
-
     if(file.isNull()) {
-      data.entries = file.path;
+      bsConf.entries = file.path;
     }
 
     if(file.isBuffer()) {
-      data.entries = arrayStream([file.contents]);
+      bsConf.entries = arrayStream([file.contents]);
     }
 
-    data.basedir = path.dirname(file.path);
+    bsConf.basedir = path.dirname(file.path);
 
     // nobuiltins option
-    if (!opts.builtins && opts.nobuiltins) {
-      var nob = opts.nobuiltins;
+    if (!bsConf.builtins && bsConf.nobuiltins) {
+      var nob = bsConf.nobuiltins;
       var builtins = require('./node_modules/browserify/lib/builtins.js');
       nob = 'string' == typeof nob ? nob.split(' ') : nob;
 
@@ -90,17 +81,11 @@ module.exports = function(opts, data){
         delete builtins[nob[i]];
       };
 
-      opts.builtins = builtins;
+      bsConf.builtins = builtins;
     }
 
-    var bundler = browserify(data, opts).transform(babelify);
-
-    if(opts.shim) {
-      for(var lib in opts.shim) {
-          opts.shim[lib].path = path.resolve(opts.shim[lib].path);
-      }
-      bundler = shim(bundler, opts.shim);
-    }
+    var bundler = browserify(bsConf)
+                     .transform(babelify.configure(bbConf));
 
     bundler.on('error', function(err) {
       self.emit('error', wrapWithPluginError(err));
@@ -108,31 +93,26 @@ module.exports = function(opts, data){
     });
 
     [
-      'exclude',
       'add',
+      'require',
       'external',
-      'transform',
       'ignore',
-      'require'
+      'exclude',
+      'plugin'
     ].forEach( function(method) {
-      if (!opts[method]) return;
-      [].concat(opts[method]).forEach(function (args) {
+      if (!bsConf[method]) return;
+      [].concat(bsConf[method]).forEach(function (args) {
         bundler[method].apply(bundler, [].concat(args));
       });
     });
 
-    self.emit('prebundle', bundler);
-
-    var bStream = bundler.bundle(function(err, src){
+    var bStream = bundler.bundle(function(err, buf){
       if(err) {
         self.emit('error', wrapWithPluginError(err));
       } else {
-        self.emit('postbundle', src);
-
-        file.contents = new Buffer(src);
+        file.contents = buf;
         self.push(file);
       }
-
       cb();
     });
   }
