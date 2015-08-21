@@ -10,11 +10,12 @@ npm install --save-dev gulp-module-bundle
 ## Example
 
 ```js
+var gulp = require('gulp');
 var bundle = require('gulp-module-bundle');
 gulp.task('bundle', function () {
     return gulp.src(src)
         .pipe(bundle())
-        .pipe(dest);
+        .pipe(gulp.dest(dest));
 });
 ```
 
